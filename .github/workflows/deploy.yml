@@ -1,0 +1,41 @@
+# ADDED: GitHub Actions pipeline to deploy to Azure App Service on push to master
+name: Build and Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - master  # deploy when pushing to master
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  CONFIGURATION: Release
+  AZURE_WEBAPP_NAME: 'webapp-bruno' # CHANGED: put your Azure Web App name here
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
+
+      - name: Publish
+        run: dotnet publish --configuration ${{ env.CONFIGURATION }} --no-build --output ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # ADDED
+          package: ./publish
