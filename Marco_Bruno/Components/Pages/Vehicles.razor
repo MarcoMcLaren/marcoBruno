@@ -1,0 +1,215 @@
+﻿@page "/vehicles"
+@rendermode InteractiveServer
+
+<PageTitle>Vehicles</PageTitle>
+
+<h1>Vehicles</h1>
+
+@if (IsLoading)
+{
+    <p><em>Loading vehicles...</em></p>
+}
+else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="ShowCreate">Add Vehicle</button>
+    </div>
+
+    @* ADDED: Create / Edit form *@
+    @if (ShowForm)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>@(IsEditMode ? "Edit Vehicle" : "Create Vehicle")</strong>
+            </div>
+            <div class="card-body">
+                <EditForm Model="FormModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+
+                    <h5 class="mb-3">Vehicle Identification</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">VIN (17 characters) *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.VIN" maxlength="17" disabled="@IsEditMode"/>
+                            <small class="text-muted">Cannot be changed after creation</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">License Plate *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.LicensePlate"/>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Vehicle Details</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Make *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.Make" placeholder="Toyota"/>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Model *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.Model" placeholder="Corolla"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Year *</label>
+                            <InputNumber class="form-control" @bind-Value="FormModel.Year"/>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Color *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.Color" placeholder="White"/>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Mileage *</label>
+                            <InputNumber class="form-control" @bind-Value="FormModel.Mileage"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fuel Type *</label>
+                            <InputSelect class="form-control" @bind-Value="FormModel.FuelType">
+                                <option value="">-- Select --</option>
+                                <option value="Petrol">Petrol</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Electric">Electric</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </InputSelect>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Daily Rate (R) *</label>
+                            <InputNumber class="form-control" @bind-Value="FormModel.DailyBaseRate"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Location</label>
+                            <InputText class="form-control" @bind-Value="FormModel.Location" placeholder="Pretoria Central"/>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <InputSelect class="form-control" @bind-Value="FormModel.Status">
+                                <option value="Available">Available</option>
+                                <option value="Reserved">Reserved</option>
+                                <option value="Rented">Rented</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Car Specific Details</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Number of Doors</label>
+                            <InputNumber class="form-control" @bind-Value="FormModel.NumberOfDoors"/>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Seating Capacity</label>
+                            <InputNumber class="form-control" @bind-Value="FormModel.SeatingCapacity"/>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Body Type</label>
+                            <InputSelect class="form-control" @bind-Value="FormModel.BodyType">
+                                <option value="">-- Select --</option>
+                                <option value="Sedan">Sedan</option>
+                                <option value="Hatchback">Hatchback</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Coupe">Coupe</option>
+                                <option value="Convertible">Convertible</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="FormModel.IsActive"/>
+                                <label class="form-check-label">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button class="btn btn-success" type="submit" disabled="@IsBusy">
+                            @(IsEditMode ? "Save Changes" : "Create")
+                        </button>
+                        <button class="btn btn-secondary" type="button" @onclick="CancelForm" disabled="@IsBusy">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @* ADDED: Vehicles table *@
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Make</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th>VIN</th>
+            <th>Plate</th>
+            <th>Status</th>
+            <th>Price/Day</th>
+            <th style="width: 220px;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (VehicleDto.Count == 0)
+        {
+            <tr>
+                <td colspan="10"><em>No vehicles found.</em></td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var v in VehicleDto)
+            {
+                <tr>
+                    <td>@v.VehicleId</td>
+                    <td>@v.Make</td>
+                    <td>@v.Model</td>
+                    <td>@v.Year</td>
+                    <td><small>@v.VIN</small></td>
+                    <td>@v.LicensePlate</td>
+                    <td>
+                        <span class="badge @GetStatusBadgeClass(v.Status)">
+                            @v.Status
+                        </span>
+                    </td>
+                    <td>R @v.DailyBaseRate</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => EditVehicle(v)">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => SoftDeleteVehicle(v.VehicleId)"
+                                disabled="@IsBusy">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}

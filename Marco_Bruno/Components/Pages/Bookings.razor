@@ -1,0 +1,217 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Rentals</PageTitle>
+
+<h1>Rentals</h1>
+
+@if (IsLoading)
+{
+    <p><em>Loading rentals...</em></p>
+}
+else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+else
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="ShowCreate">Add Rental</button>
+    </div>
+
+    @* ADDED: Create / Edit form *@
+    @if (ShowForm)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>@(IsEditMode ? "Edit Rental" : "Create Rental")</strong>
+            </div>
+            <div class="card-body">
+                <EditForm Model="FormModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary/>
+
+                    <h5 class="mb-3">Customer & Vehicle Selection</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Customer *</label>
+                            <InputSelect class="form-control" @bind-Value="FormModel.CustomerId" disabled="@IsEditMode">
+                                <option value="0">-- Select Customer --</option>
+                                @foreach (var customer in AvailableCustomers)
+                                {
+                                    <option value="@customer.CustomerId">
+                                        @customer.FirstName @customer.LastName (@customer.Email)
+                                    </option>
+                                }
+                            </InputSelect>
+                            @if (IsEditMode)
+                            {
+                                <small class="text-muted">Cannot change customer after creation</small>
+                            }
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vehicle *</label>
+                            <InputSelect class="form-control" @bind-Value="FormModel.VehicleId" disabled="@IsEditMode">
+                                <option value="0">-- Select Vehicle --</option>
+                                @foreach (var car in AvailableVehicles)
+                                {
+                                    <option value="@car.VehicleId">
+                                        @car.Year @car.Make @car.Model (@car.LicensePlate) - R@car.DailyBaseRate/day
+                                    </option>
+                                }
+                            </InputSelect>
+                            @if (IsEditMode)
+                            {
+                                <small class="text-muted">Cannot change vehicle after creation</small>
+                            }
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Rental Dates</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date *</label>
+                            <InputDate class="form-control" @bind-Value="FormModel.StartDate"/>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date *</label>
+                            <InputDate class="form-control" @bind-Value="FormModel.EndDate"/>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3 mt-4">Location Details</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Pickup Location *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.PickupLocation" placeholder="Pretoria Central"/>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Return Location *</label>
+                            <InputText class="form-control" @bind-Value="FormModel.ReturnLocation" placeholder="Pretoria Central"/>
+                        </div>
+                    </div>
+
+                    @if (IsEditMode)
+                    {
+                        <h5 class="mb-3 mt-4">Rental Status</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status</label>
+                                <InputSelect class="form-control" @bind-Value="FormModel.Status">
+                                    <option value="Reserved">Reserved</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </InputSelect>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Actual Return Date</label>
+                                <InputDate class="form-control" @bind-Value="FormModel.ActualReturnDate"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Initial Mileage</label>
+                                <InputNumber class="form-control" @bind-Value="FormModel.InitialMileage"/>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Final Mileage</label>
+                                <InputNumber class="form-control" @bind-Value="FormModel.FinalMileage"/>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="FormModel.IsActive"/>
+                                <label class="form-check-label">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2">
+                        <button class="btn btn-success" type="submit" disabled="@IsBusy">
+                            @(IsEditMode ? "Save Changes" : "Create")
+                        </button>
+                        <button class="btn btn-secondary" type="button" @onclick="CancelForm" disabled="@IsBusy">
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    @* ADDED: Rentals table *@
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Customer</th>
+            <th>Vehicle</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th>Total Cost</th>
+            <th>Active</th>
+            <th style="width: 220px;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (RentalDto.Count == 0)
+        {
+            <tr>
+                <td colspan="9"><em>No rentals found.</em></td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var r in RentalDto)
+            {
+                <tr>
+                    <td>@r.RentalId</td>
+                    <td>
+                        <strong>@r.CustomerName</strong><br/>
+                        <small class="text-muted">@r.CustomerEmail</small>
+                    </td>
+                    <td>
+                        <strong>@r.VehicleYear @r.VehicleMake @r.VehicleModel</strong><br/>
+                        <small class="text-muted">@r.VehicleLicensePlate</small>
+                    </td>
+                    <td>@r.StartDate.ToString("yyyy-MM-dd")</td>
+                    <td>@r.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <span class="badge @GetStatusBadgeClass(r.Status)">
+                            @r.Status
+                        </span>
+                        @if (r.IsOverdue)
+                        {
+                            <br/><span class="badge bg-danger mt-1">OVERDUE</span>
+                        }
+                    </td>
+                    <td>R @r.TotalCost?.ToString("N2")</td>
+                    <td>@(r.IsActive ? "Yes" : "No")</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => EditRental(r)">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => SoftDeleteRental(r.RentalId)"
+                                disabled="@IsBusy">
+                            Cancel
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}

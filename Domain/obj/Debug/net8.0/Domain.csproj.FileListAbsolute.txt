@@ -1,0 +1,11 @@
+C:\DEV DRIVE\Marco_Bruno\Domain\bin\Debug\net8.0\Domain.deps.json
+C:\DEV DRIVE\Marco_Bruno\Domain\bin\Debug\net8.0\Domain.dll
+C:\DEV DRIVE\Marco_Bruno\Domain\bin\Debug\net8.0\Domain.pdb
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\Domain.dll
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\refint\Domain.dll
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\Domain.pdb
+C:\DEV DRIVE\Marco_Bruno\Domain\obj\Debug\net8.0\ref\Domain.dll
