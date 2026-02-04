@@ -46,18 +46,21 @@ if (app.Environment.IsDevelopment())
         {
             var context = services.GetRequiredService<ApplicationDbContext>();
 
-            // Apply any pending migrations
+            // Apply any pending migrations (run in all environments)
             await context.Database.MigrateAsync();
 
-            // Seed the database
-            await DbSeeder.SeedAsync(context);
+            // Seed only in development
+            if (app.Environment.IsDevelopment())
+            {
+                await DbSeeder.SeedAsync(context);
+            }
 
-            Console.WriteLine("Database seeded successfully!");
+            Console.WriteLine("Database setup completed successfully!");
         }
         catch (Exception ex)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while seeding the database.");
+            logger.LogError(ex, "An error occurred while setting up the database.");
         }
     }
 }
